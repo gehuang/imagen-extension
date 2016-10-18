@@ -12,7 +12,7 @@ from imagen.patternfn import float_error_ignore
 # ##################### SineGrating
 def SineG(x, y, BlackBackground, phase_shift, Bound,frames):
 
-    orientations = [i * np.pi / 6 for i in range(6)]
+    orientations = [i * np.pi /6 for i in range(6)]
     frequencies = [0.6, 1.2, 2.4, 4.8, 9.6, 19.2]
     phase = np.pi/2
     paras = [[[ori, fre, phase]] for ori in orientations for fre in frequencies]
@@ -102,8 +102,8 @@ class Spiral(PatternGenerator):
     aspect_ratio = param.Number(default=1.0,bounds=(0.0,None),softbounds=(0.0,2.0),
         precedence=0.31,doc="Ratio of width to height.")
 
-    outer_parts = param.Number(default=0.02,bounds=(0.0,None),softbounds=(0.0,0.5),
-        precedence=0.60,doc="Thickness (line width) of the spiral.")
+    outer_parts = param.Integer(default=2,bounds=(1,None),softbounds=(0.0,2.0),
+        precedence=0.31,doc="Number of parts in the grating.")
 
     turning = param.Number(default=0.05,bounds=(0.01,None),softbounds=(0.01,2.0),
         precedence=0.62,doc="Density of turnings; turning*angle gives the actual radius.")
@@ -149,7 +149,7 @@ def SpiralG(x, y, BlackBackground, phase_shift, Bound, frames):
     parts = [1, 2, 4, 8,16]
     C_target = [0.6, 1.2, 2.4, 4.8, 9.6]
 
-    paras = [[[0, part/(C_t*2*np.pi), part]] for part in parts for C_t in C_target]
+    paras = [[[np.pi/2, part/(C_t*2*np.pi), part]] for part in parts for C_t in C_target]
 
     if phase_shift:
         paras = pert.modulation_of_phase(paras,'SpG',frames)
@@ -179,55 +179,37 @@ class Wedge(PatternGenerator):
     aspect_ratio = param.Number(default=1.0,bounds=(0.0,None),softbounds=(0.0,2.0),
         precedence=0.31,doc="Ratio of width to height.")
 
-    size = param.Number(default=np.pi/4,bounds=(0.0,None),softbounds=(0.0,2.0*np.pi),
-        precedence=0.60,doc="Angular length of the sector, in radians.")
-
-    smoothing = param.Number(default=0.4,bounds=(0.0,None),softbounds=(0.0,0.5),
-        precedence=0.61,doc="Width of the Gaussian fall-off outside the sector.")
+    outer_parts = param.Integer(default=4,bounds=(1,None),softbounds=(0.0,2.0),
+        precedence=0.31,doc="Number of parts in the grating.")
 
     def function(self,p):
         aspect_ratio = p.aspect_ratio
         x = self.pattern_x/aspect_ratio
         y = self.pattern_y
-        gaussian_width = p.smoothing
 
+        thickness = np.pi/p.outer_parts
         angle = np.absolute(np.arctan2(y,x))
-        half_length = p.size/2
-
-        radius = 1.0 - np.greater_equal(angle,half_length)
-        distance = angle - half_length
-
-        sigmasq = gaussian_width*gaussian_width
-
-        with float_error_ignore():
-            falloff = np.exp(np.divide(-distance*distance, 2.0*sigmasq))
-
-        return np.maximum(radius, falloff)
- #       return (np.cos(angle/half_length*np.pi)+1)/2
+        my_wedge = (np.cos(np.pi*angle/thickness)+1)/2
+        get_index = angle > thickness
+        my_wedge[get_index] = 0
+        return my_wedge
 
 class RadialGrating(Composite):
 
     parts = param.Integer(default=4,bounds=(1,None),softbounds=(0.0,2.0),
         precedence=0.31,doc="Number of parts in the grating.")
 
-    smoothing = param.Number(default=0.8,bounds=(0.0,None),softbounds=(0.0,0.5),
-        precedence=0.61,doc="""
-        Width of the Gaussian fall-off outside the sector, scaled by parts.""")
-
     def function(self, p):
-        gens = [Wedge(size=np.pi/p.parts*2/3,smoothing=p.smoothing/p.parts,
-                      orientation=i*2*np.pi/p.parts) for i in range(p.parts)]
+        gens = [Wedge(outer_parts=p.parts,orientation=i*2*np.pi/p.parts) for i in range(p.parts)]
 
         return Composite(generators=gens, bounds=p.bounds, orientation=p.orientation,
                          xdensity=p.xdensity, ydensity=p.ydensity)()
 
 def RadialG(x, y, BlackBackground, phase_shift, Bound,frames):
     parts = [1]*4+[2,4,8,16]
-    orien = [np.pi/2*j for j in range(4)]+ [np.pi/2] + [0]*3
-    smooth = [0.7]*4 + [0.7]*4
-    paras = zip(orien,smooth,parts)
+    orien = [np.pi/2*j for j in range(4)]+ [np.pi/2]*4
+    paras = zip(orien,parts)
     paras = [[par] for par in paras]
-
 
     if phase_shift:
         paras = pert.modulation_of_phase(paras,'RG',frames)
@@ -239,11 +221,7 @@ def RadialG(x, y, BlackBackground, phase_shift, Bound,frames):
     for pars in paras:
         idx_shift = 0
         for p in pars:
-            if p[2] == 1:
-                RG[idx_proto][idx_shift] = ig.RadialGrating(bounds=Bound,parts=p[2],smoothing=p[1],
-                                       orientation=p[0],xdensity=x,ydensity=y)()
-            else:
-                RG[idx_proto][idx_shift] = RadialGrating(bounds=Bound,parts=p[2],smoothing=p[1],
+            RG[idx_proto][idx_shift] = RadialGrating(bounds=Bound,parts=p[1],
                                        orientation=p[0],xdensity=x,ydensity=y)()
             if BlackBackground:
                 assert RG[idx_proto][idx_shift].max() <= 1.0 and RG[idx_proto][idx_shift].min() >= 0
@@ -317,14 +295,14 @@ if __name__ == '__main__':
     Bound = BoundingBox(radius=0.58)
     BlackBackground = True  # convert image to black background
     phase_shift = False  # generate different phases
-
+    f = 4
 
     ############ waves
-    SG = SineG(x, y, BlackBackground, phase_shift, Bound, frames=24)
-    SpG = SpiralG(x, y, BlackBackground, phase_shift, Bound, frames=24)
-    T = Targets(x, y, BlackBackground, phase_shift, Bound, frames=24)
-    HG = HyperG(x, y, BlackBackground, phase_shift, Bound, frames=24)
-    RG = RadialG(x, y, BlackBackground, phase_shift, Bound, frames=24)
+    SG = SineG(x, y, BlackBackground, phase_shift, Bound, frames=f)
+    SpG = SpiralG(x, y, BlackBackground, phase_shift, Bound, frames=f)
+    T = Targets(x, y, BlackBackground, phase_shift, Bound, frames=f)
+    HG = HyperG(x, y, BlackBackground, phase_shift, Bound, frames=f)
+    RG = RadialG(x, y, BlackBackground, phase_shift, Bound, frames=f)
 
 
     # ############## save images to .mat file

@@ -44,10 +44,14 @@ def modulation_of_phase(para_list,shape_name,frames):
         for i in range(len(para_list)):
             new_para_list[i][0:frames] = [(para_list[i][0][0], para_list[i][0][1], para_list[i][0][2]+ 2*np.pi*j/frames)
                                                         for j in range(frames)]
-    elif shape_name in ['SpG','RG']:
+    elif shape_name in ['SpG']:
         for i in range(len(para_list)):
             new_para_list[i][0:frames]  = [(para_list[i][0][0] + 2*np.pi*j/frames/para_list[i][0][2], para_list[i][0][1],
                                                          para_list[i][0][2]) for j in range(frames)]
+    elif shape_name in ['RG']:
+        for i in range(len(para_list)):
+            new_para_list[i][0:frames]  = [(para_list[i][0][0] + 2*np.pi*j/frames/para_list[i][0][1], para_list[i][0][1])
+                                          for j in range(frames)]
     elif shape_name in ['T']:
         for i in range(len(para_list)):
             new_para_list[i][0:frames]  = [(para_list[i][0][0], para_list[i][0][1], para_list[i][0][2],
