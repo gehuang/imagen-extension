@@ -12,8 +12,8 @@ from imagen.patternfn import float_error_ignore
 # ##################### SineGrating
 def SineG(x, y, BlackBackground, phase_shift, Bound,frames):
 
-    orientations = [i * np.pi /6 for i in range(6)]
-    frequencies = [0.6, 1.2, 2.4, 4.8, 9.6, 19.2]
+    orientations = [i * np.pi /8 for i in range(8)]
+    frequencies = [2.4, 4.8, 9.6, 19.2, 38.4]
     phase = np.pi/2
     paras = [[[ori, fre, phase]] for ori in orientations for fre in frequencies]
 
@@ -71,7 +71,7 @@ class HyperbolicGrating(PatternGenerator):
 def HyperG(x, y, BlackBackground, phase_shift, Bound,frames):
 
     orientations = [i*np.pi/8 for i in range(4)]
-    sizes = [1/s for s in [0.6, 1.2, 2.4, 4.8, 9.6, 19.2]]
+    sizes = [1/s for s in [2.4, 4.8, 9.6, 19.2, 38.4]]
     paras = [[[o,s,0.0]] for o in orientations for s in sizes]
 
     if phase_shift:
@@ -146,8 +146,8 @@ class SpiralGrating(Composite):
                          xdensity=p.xdensity, ydensity=p.ydensity)()
 
 def SpiralG(x, y, BlackBackground, phase_shift, Bound, frames):
-    parts = [1, 2, 4, 8,16]
-    C_target = [0.6, 1.2, 2.4, 4.8, 9.6]
+    parts = [1, 2, 4, 8, 16]
+    C_target = [2.4, 4.8, 9.6, 19.2, 38.4]
     paras = [[[np.pi/2, part/(C_t*2*np.pi), part]] for part in parts for C_t in C_target]
 
     if phase_shift:
@@ -169,6 +169,7 @@ def SpiralG(x, y, BlackBackground, phase_shift, Bound, frames):
         idx_proto += 1
 
     return SpG
+
 
 
 
@@ -262,7 +263,7 @@ class ConcentricRings(PatternGenerator):
 
 # #################### Targets/ ConcentricRings
 def Targets(x, y, BlackBackground, phase_shift, Bound,frames):
-    sizes = [1.0/s for s in [0.6, 1.2, 2.4, 4.8, 9.6, 19.2]]
+    sizes = [1.0/s for s in [2.4, 4.8, 9.6, 19.2,38.4]]
     paras = [[[0, s, 1, 0.0]] for s in sizes]
 
     if phase_shift:
@@ -289,48 +290,45 @@ def Targets(x, y, BlackBackground, phase_shift, Bound,frames):
 
 if __name__ == '__main__':
     # image size
-    x = 288
-    y = 288
+    x = 192
+    y = 192
     Bound = BoundingBox(radius=0.58)
     BlackBackground = True  # convert image to black background
     phase_shift = False  # generate different phases
     f = 4
 
     ############ waves
-    # SG = SineG(x, y, BlackBackground, phase_shift, Bound, frames=f)
+    SG = SineG(x, y, BlackBackground, phase_shift, Bound, frames=f)
     SpG = SpiralG(x, y, BlackBackground, phase_shift, Bound, frames=f)
     T = Targets(x, y, BlackBackground, phase_shift, Bound, frames=f)
-    # HG = HyperG(x, y, BlackBackground, phase_shift, Bound, frames=f)
+    HG = HyperG(x, y, BlackBackground, phase_shift, Bound, frames=f)
     RG = RadialG(x, y, BlackBackground, phase_shift, Bound, frames=f)
 
-    sio.savemat('RG_b.mat', {'imgs': RG})
-    sio.savemat('SpG_b.mat', {'imgs': SpG})
-    sio.savemat('T_b.mat', {'imgs': T})
-    # # ############## save images to .mat file
-    # if phase_shift:
-    #     if BlackBackground:
-    #         sio.savemat('SG_shift_b.mat', {'imgs': SG})
-    #         sio.savemat('HG_shift_b.mat', {'imgs': HG})
-    #         sio.savemat('SpG_shift_b.mat', {'imgs': SpG})
-    #         sio.savemat('RG_shift_b.mat', {'imgs': RG})
-    #         sio.savemat('T_shift_b.mat', {'imgs': T})
-    #     else:
-    #         sio.savemat('SG_shift_w.mat', {'imgs': SG})
-    #         sio.savemat('HG_shift_w.mat', {'imgs': HG})
-    #         sio.savemat('SpG_shift_w.mat', {'imgs': SpG})
-    #         sio.savemat('RG_shift_w.mat', {'imgs': RG})
-    #         sio.savemat('T_shift_w.mat', {'imgs': T})
-    # else:
-    #     if BlackBackground:
-    #         sio.savemat('SG_b.mat', {'imgs': SG})
-    #         sio.savemat('HG_b.mat', {'imgs': HG})
-    #         sio.savemat('SpG_b.mat', {'imgs': SpG})
-    #         sio.savemat('RG_b.mat', {'imgs': RG})
-    #         sio.savemat('T_b.mat', {'imgs': T})
-    #     else:
-    #         sio.savemat('SG_w.mat', {'imgs': SG})
-    #         sio.savemat('HG_w.mat', {'imgs': HG})
-    #         sio.savemat('SpG_w.mat', {'imgs': SpG})
-    #         sio.savemat('RG_w.mat', {'imgs': RG})
-    #         sio.savemat('T_w.mat', {'imgs': T})
+    ############## save images to .mat file
+    if phase_shift:
+        if BlackBackground:
+            sio.savemat('SG_shift_b.mat', {'imgs': SG})
+            sio.savemat('HG_shift_b.mat', {'imgs': HG})
+            sio.savemat('SpG_shift_b.mat', {'imgs': SpG})
+            sio.savemat('RG_shift_b.mat', {'imgs': RG})
+            sio.savemat('T_shift_b.mat', {'imgs': T})
+        else:
+            sio.savemat('SG_shift_w.mat', {'imgs': SG})
+            sio.savemat('HG_shift_w.mat', {'imgs': HG})
+            sio.savemat('SpG_shift_w.mat', {'imgs': SpG})
+            sio.savemat('RG_shift_w.mat', {'imgs': RG})
+            sio.savemat('T_shift_w.mat', {'imgs': T})
+    else:
+        if BlackBackground:
+            sio.savemat('SG_b.mat', {'imgs': SG})
+            sio.savemat('HG_b.mat', {'imgs': HG})
+            sio.savemat('SpG_b.mat', {'imgs': SpG})
+            sio.savemat('RG_b.mat', {'imgs': RG})
+            sio.savemat('T_b.mat', {'imgs': T})
+        else:
+            sio.savemat('SG_w.mat', {'imgs': SG})
+            sio.savemat('HG_w.mat', {'imgs': HG})
+            sio.savemat('SpG_w.mat', {'imgs': SpG})
+            sio.savemat('RG_w.mat', {'imgs': RG})
+            sio.savemat('T_w.mat', {'imgs': T})
 
