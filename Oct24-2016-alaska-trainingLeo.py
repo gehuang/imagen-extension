@@ -13,7 +13,7 @@ from imagen.patternfn import float_error_ignore
 def SineG(x, y, BlackBackground, phase_shift, Bound,frames):
 
     orientations = [i * np.pi /8 for i in range(8)]
-    frequencies = [2.4, 4.8, 9.6, 13.6, 19.2]
+    frequencies = [1.0 ,2.0, 4.0, 8.0, 12.0, 16.0]
     phase = np.pi/2
     paras = [[[ori, fre, phase]] for ori in orientations for fre in frequencies]
 
@@ -71,7 +71,7 @@ class HyperbolicGrating(PatternGenerator):
 def HyperG(x, y, BlackBackground, phase_shift, Bound,frames):
 
     orientations = [i*np.pi/8 for i in range(4)]
-    sizes = [1/s for s in [2.4, 4.8, 9.6, 13.6, 19.2]]
+    sizes = [1.0/s for s in [1 ,2, 4, 8, 12, 16]]
     paras = [[[o,s,0.0]] for o in orientations for s in sizes]
 
     if phase_shift:
@@ -147,7 +147,7 @@ class SpiralGrating(Composite):
 
 def SpiralG(x, y, BlackBackground, phase_shift, Bound, frames):
     parts = [1, 2, 4, 8, 12, 16]
-    C_target = [2.4, 4.8, 9.6, 13.6, 19.2,27.2]
+    C_target = [1.0 ,2.0, 4.0, 8.0, 12.0, 16.0]
     paras = [[[np.pi/2, part/(C_t*2*np.pi), part]] for part in parts for C_t in C_target]
 
     if phase_shift:
@@ -263,7 +263,8 @@ class ConcentricRings(PatternGenerator):
 
 # #################### Targets/ ConcentricRings
 def Targets(x, y, BlackBackground, phase_shift, Bound,frames):
-    sizes = [1.0/s for s in [2.4, 4.8, 9.6, 13.6, 19.2,27.2]]
+    # sizes = [1.0/s for s in [1.2 ,2.4, 4.8, 9.6, 13.6, 19.2,27.2]]
+    sizes = [1.0/s for s in [1 ,2, 4, 8, 12, 16]]
     paras = [[[0, s, 1, 0.0]] for s in sizes]
 
     if phase_shift:
@@ -292,7 +293,7 @@ if __name__ == '__main__':
     # image size
     x = 192
     y = 192
-    Bound = BoundingBox(radius=0.58)
+    Bound = BoundingBox(radius=0.64)
     BlackBackground = True  # convert image to black background
     phase_shift = False  # generate different phases
     f = 4
