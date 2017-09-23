@@ -1,3 +1,5 @@
+# produce jetter in orientation or scaling
+# On March 2017 modified to be able to produce different phases, so that can generate movies
 import numpy as np
 
 def modulation_of_jetter(para_list,shape_name):
