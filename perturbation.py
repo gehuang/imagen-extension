@@ -57,3 +57,4 @@ def modulation_of_phase(para_list,shape_name,frames):
             new_para_list[i][0:frames]  = [(para_list[i][0][0], para_list[i][0][1], para_list[i][0][2],
                                                          para_list[i][0][3]+2*np.pi*j/frames) for j in range(frames)]
     return new_para_list
+
